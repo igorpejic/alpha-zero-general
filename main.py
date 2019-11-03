@@ -1,11 +1,15 @@
 from Coach import Coach
-from othello.OthelloGame import OthelloGame as Game
-from othello.pytorch.NNet import NNetWrapper as nn
+# from othello.pytorch.NNet import NNetWrapper as nn
+
+# from othello.OthelloGame import OthelloGame as Game
+# from othello.tensorflow.NNet import NNetWrapper as nn
+from binpack.tensorflow.NNet import NNetWrapper as nn
+from binpack.BinPackGame import BinPackGame as Game
 from utils import *
 
 args = dotdict({
     'numIters': 1000,
-    'numEps': 100,
+    'numEps': 10,
     'tempThreshold': 15,
     'updateThreshold': 0.6,
     'maxlenOfQueue': 200000,
@@ -21,10 +25,14 @@ args = dotdict({
 })
 
 if __name__=="__main__":
-    g = Game(6)
+    N_TILES = 10 
+    HEIGHT = 8
+    WIDTH = 8
+    g = Game(HEIGHT, WIDTH, N_TILES)
+
     nnet = nn(g)
 
-    if args.load_model:
+    if args.load_model and False:
         nnet.load_checkpoint(args.load_folder_file[0], args.load_folder_file[1])
 
     c = Coach(g, nnet, args)
