@@ -41,6 +41,7 @@ class Board():
         Position is index (?) on which to place tile.
         We always place the tile which is located at position 1 or 2. 
         """
+
         new_stack = DataGenerator.play_position(self.state, position)
         self.state = new_stack
         return new_stack
@@ -66,8 +67,8 @@ class Board():
     def get_win_state(self):
         if self.all_tiles_placed() or not np.any(self.get_valid_moves()): 
             # game  has ended calculate reward
-            locus_filled = np.sum(self.state)
-            total_locus = self.state.shape[0] * self.state.shape[1]
+            locus_filled = np.sum(self.state[0])
+            total_locus = self.state[0].shape[0] * self.state[0].shape[1]
             if locus_filled == total_locus:
                 return 1
             else:

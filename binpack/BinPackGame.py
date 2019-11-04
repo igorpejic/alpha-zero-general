@@ -17,6 +17,7 @@ class BinPackGame(Game):
 
         dg = DataGenerator()
         self.tiles = dg.gen_matrix_instance(n_tiles, width, height)
+        print(len(self.tiles))
 
         self._base_board = Board(height, width, self.tiles)
 
@@ -51,6 +52,7 @@ class BinPackGame(Game):
             # 0 used to represent unfinished game.
             return 0
         else:
+            print(winstate)
             return winstate
 
     def getCanonicalForm(self, state, player):
@@ -60,6 +62,7 @@ class BinPackGame(Game):
     def getSymmetries(self, board, pi):
         """Board is left/right board symmetric"""
         """
+        TODO:
         We need to rotate just the board and keep the pieces unrotated
         although I don't think rotating te pieces would hurt, it's just not  needed
         """

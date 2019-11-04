@@ -95,6 +95,7 @@ class MCTS():
             return -v
 
         valids = self.Vs[_s]
+
         cur_best = -float('inf')
         best_act = -1
 

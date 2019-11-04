@@ -8,24 +8,24 @@ from binpack.BinPackGame import BinPackGame as Game
 from utils import *
 
 args = dotdict({
-    'numIters': 1000,
-    'numEps': 10,
+    'numIters': 8,
+    'numEps': 2,
     'tempThreshold': 15,
     'updateThreshold': 0.6,
     'maxlenOfQueue': 200000,
     'numMCTSSims': 25,
-    'arenaCompare': 40,
+    'arenaCompare': 2,
     'cpuct': 1,
 
     'checkpoint': './temp/',
     'load_model': False,
     'load_folder_file': ('/dev/models/8x100x50','best.pth.tar'),
-    'numItersForTrainExamplesHistory': 20,
+    'numItersForTrainExamplesHistory': 40,
 
 })
 
 if __name__=="__main__":
-    N_TILES = 10 
+    N_TILES = 8 
     HEIGHT = 8
     WIDTH = 8
     g = Game(HEIGHT, WIDTH, N_TILES)
