@@ -17,7 +17,7 @@ args = dotdict({
     'lr': 0.001,
     'dropout': 0.3,
     'epochs': 100,
-    'batch_size': 32,
+    'batch_size': 8,
     'num_channels': 512,
 })
 
@@ -42,7 +42,7 @@ class NNetWrapper(NeuralNet):
         """
 
         for epoch in range(args.epochs):
-            print('EPOCH ::: ' + str(epoch + 1))
+            print('EPOCH ::: ' + str(epoch + 1) + ' len examples:' + str(len(examples)))
             data_time = AverageMeter()
             batch_time = AverageMeter()
             pi_losses = AverageMeter()

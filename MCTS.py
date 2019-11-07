@@ -1,6 +1,7 @@
 import math
 import numpy as np
-EPS = 1e-8
+# EPS = 1e-8
+EPS = 0.1
 
 class MCTS():
     """
@@ -31,7 +32,7 @@ class MCTS():
         for i in range(self.args.numMCTSSims):
             self.search(canonicalBoard)
 
-        s = self.game.stringRepresentation(canonicalBoard)
+        s, state = self.game.stringRepresentation(canonicalBoard)
         counts = [self.Nsa[(s,a)] if (s,a) in self.Nsa else 0 for a in range(self.game.getActionSize())]
 
         if temp==0:
@@ -60,23 +61,26 @@ class MCTS():
         NOTE: the return values are the negative of the value of the current
         state. This is done since v is in [-1,1] and if v is the value of a
         state for the current player, then its value is -v for the other player.
+        # IGOR changed this behaviour
 
         Returns:
             v: the negative of the value of the current canonicalBoard
         """
 
-        _s = self.game.stringRepresentation(canonicalBoard)
+        _s, state = self.game.stringRepresentation(canonicalBoard)
 
         if _s not in self.Es:
             self.Es[_s] = self.game.getGameEnded(canonicalBoard, 1)
         if self.Es[_s]!=0:
             # terminal node
-            return -self.Es[_s]
+            return self.Es[_s]
 
         if _s not in self.Ps:
             # leaf node
             self.Ps[_s], v = self.nnet.predict(canonicalBoard)
             valids = self.game.getValidMoves(canonicalBoard, 1)
+            if valids.all():
+                print(self.Ps[_s])
             self.Ps[_s] = self.Ps[_s]*valids      # masking invalid moves
             sum_Ps_s = np.sum(self.Ps[_s])
             if sum_Ps_s > 0:
@@ -92,7 +96,7 @@ class MCTS():
 
             self.Vs[_s] = valids
             self.Ns[_s] = 0
-            return -v
+            return v
 
         valids = self.Vs[_s]
 
@@ -104,19 +108,19 @@ class MCTS():
             if valids[a]:
                 if (_s,a) in self.Qsa:
                     u = self.Qsa[(_s,a)] + self.args.cpuct*self.Ps[_s][a]*math.sqrt(self.Ns[_s])/(1+self.Nsa[(_s,a)])
+                    #if not state.state[0].any():
+                    #    print(self.Qsa[(_s, a)], u, 'first', cur_best, u > cur_best, self.Nsa[(_s, a)])
                 else:
-                    u = self.args.cpuct*self.Ps[_s][a]*math.sqrt(self.Ns[_s] + EPS)     # Q = 0 ?
+                    # i Added + 100 - optimistic initialization??
+                    u = self.args.cpuct*self.Ps[_s][a]*math.sqrt(self.Ns[_s] + EPS) + 100     # Q = 0 ?
+                    #if not state.state[0].any():
+                    #    print(u, 'second')
 
                 if u > cur_best:
                     cur_best = u
                     best_act = a
 
         a = best_act
-
-        # IGOR edit
-        # next_s, next_player = self.game.getNextState(canonicalBoard, 1, a)
-        # next_s = self.game.getCanonicalForm(next_s, next_player)
-
         next_s, next_player = self.game.getNextState(canonicalBoard, 1, a)
         next_s = self.game.getCanonicalForm(next_s, next_player)
 
@@ -132,4 +136,4 @@ class MCTS():
             self.Nsa[(_s,a)] = 1
 
         self.Ns[_s] += 1
-        return -v
+        return v
