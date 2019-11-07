@@ -42,7 +42,8 @@ class NNetWrapper(NeuralNet):
         """
 
         for epoch in range(args.epochs):
-            print('EPOCH ::: ' + str(epoch + 1) + ' len examples:' + str(len(examples)))
+            if epoch % 50 == 0:
+                print('EPOCH ::: ' + str(epoch + 1) + ' len examples:' + str(len(examples)))
             data_time = AverageMeter()
             batch_time = AverageMeter()
             pi_losses = AverageMeter()
@@ -75,17 +76,18 @@ class NNetWrapper(NeuralNet):
                 batch_idx += 1
 
                 # plot progress
-                bar.suffix  = '({batch}/{size}) Data: {data:.3f}s | Batch: {bt:.3f}s | Total: {total:} | ETA: {eta:} | Loss_pi: {lpi:.4f} | Loss_v: {lv:.3f}'.format(
-                            batch=batch_idx,
-                            size=int(len(examples) / args.batch_size),
-                            data=data_time.avg,
-                            bt=batch_time.avg,
-                            total=bar.elapsed_td,
-                            eta=bar.eta_td,
-                            lpi=pi_losses.avg,
-                            lv=v_losses.avg,
-                            )
-                bar.next()
+                if epoch % 50 == 0:
+                    bar.suffix  = '({batch}/{size}) Data: {data:.3f}s | Batch: {bt:.3f}s | Total: {total:} | ETA: {eta:} | Loss_pi: {lpi:.4f} | Loss_v: {lv:.3f}'.format(
+                                batch=batch_idx,
+                                size=int(len(examples) / args.batch_size),
+                                data=data_time.avg,
+                                bt=batch_time.avg,
+                                total=bar.elapsed_td,
+                                eta=bar.eta_td,
+                                lpi=pi_losses.avg,
+                                lv=v_losses.avg,
+                                )
+                    bar.next()
             bar.finish()
 
 

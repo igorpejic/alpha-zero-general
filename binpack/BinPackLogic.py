@@ -15,7 +15,7 @@ class Board():
     BinPack Board.
     """
 
-    def __init__(self, height, width, tiles, state=None):
+    def __init__(self, height, width, tiles, state=None, visualization_state=None):
         "Set up initial board configuration."
         """
         tiles - array of tiles with (width, height)
@@ -28,11 +28,14 @@ class Board():
         self.tiles = tiles
         self.orientations = ORIENTATIONS
 
+
         if state is None:
             board = np.zeros([1, self.height, self.width])
             self.state = np.concatenate((board, self.tiles), axis=0)
+            self.vis_state = np.zeros([self.height, self.width])
         else:
             self.state = state
+            self.vis_state = visualization_state
             assert self.state.shape == (len(tiles) + 1, self.height, self.width)
 
     def add_tile(self, position, player):
@@ -41,10 +44,13 @@ class Board():
         Position is index (?) on which to place tile.
         We always place the tile which is located at position 1 or 2. 
         """
-
-        new_stack = DataGenerator.play_position(self.state, position)
+        new_stack, vis_state = DataGenerator.play_position(
+            self.state, position, tile_index=DataGenerator.get_n_tiles_placed(self.state),
+            vis_state=self.vis_state
+        )
         self.state = new_stack
-        return new_stack
+        self.vis_state = vis_state
+        return new_stack, vis_state
 
 
     def get_valid_moves(self):
@@ -78,13 +84,12 @@ class Board():
         return False
 
 
-    def with_state(self, state):
+    def with_state(self, state, vis_state=None):
         """Create copy of board with specified pieces."""
         if state is None:
             state = self.state
         state = np.copy(state)
-        return Board(
-            self.height, self.width, self.tiles, state)
+        return Board(self.height, self.width, self.tiles, state, vis_state)
 
     def __str__(self):
         result_str = ''

@@ -23,7 +23,7 @@ class BinPackGame(Game):
         self._base_board = Board(height, width, self.tiles)
 
     def getInitBoard(self):
-        return self._base_board.state
+        return self._base_board.state, self._base_board.vis_state
 
     def getBoardSize(self):
         return (
@@ -36,11 +36,11 @@ class BinPackGame(Game):
         return (self._base_board.width * self._base_board.height *
                 self._base_board.orientations)
 
-    def getNextState(self, board, player, action):
+    def getNextState(self, board, player, action, vis_state=None):
         """Returns a copy of the board with updated move, original board is unmodified."""
-        b = self._base_board.with_state(state=np.copy(board))
+        b = self._base_board.with_state(state=np.copy(board), vis_state=vis_state)
         b.add_tile(action, player)
-        return b.state, player
+        return b.state, player, b.vis_state
 
     def getValidMoves(self, board, player):
         "Any zero value in top row in a valid move"

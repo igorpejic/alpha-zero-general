@@ -9,7 +9,7 @@ from utils import *
 
 args = dotdict({
     'numIters': 8,
-    'numEps': 3,
+    'numEps': 1,
     'tempThreshold': 15,
     'updateThreshold': 0.6,
     'maxlenOfQueue': 200000,
