@@ -16,7 +16,7 @@ from .BinPackNNet import BinPackNNet as onnet
 args = dotdict({
     'lr': 0.001,
     'dropout': 0.3,
-    'epochs': 100,
+    'epochs': 900,
     'batch_size': 8,
     'num_channels': 512,
 })
@@ -50,7 +50,7 @@ class NNetWrapper(NeuralNet):
             v_losses = AverageMeter()
             end = time.time()
 
-            bar = Bar('Training Net', max=int(len(examples) / args.batch_size))
+            # bar = Bar('Training Net', max=int(len(examples) / args.batch_size / 50))
             batch_idx = 0
 
             # self.sess.run(tf.local_variables_initializer())
@@ -77,18 +77,21 @@ class NNetWrapper(NeuralNet):
 
                 # plot progress
                 if epoch % 50 == 0:
-                    bar.suffix  = '({batch}/{size}) Data: {data:.3f}s | Batch: {bt:.3f}s | Total: {total:} | ETA: {eta:} | Loss_pi: {lpi:.4f} | Loss_v: {lv:.3f}'.format(
+                    print('({batch}/{size}) Data: {data:.3f}s | Batch: {bt:.3f}s | Total: {total:} | ETA: {eta:} | Loss_pi: {lpi:.4f} | Loss_v: {lv:.3f}'.format(
                                 batch=batch_idx,
                                 size=int(len(examples) / args.batch_size),
                                 data=data_time.avg,
                                 bt=batch_time.avg,
-                                total=bar.elapsed_td,
-                                eta=bar.eta_td,
+                                #total=bar.elapsed_td,
+                                total=0,
+                                #eta=bar.eta_td,
+                                eta=0,
                                 lpi=pi_losses.avg,
                                 lv=v_losses.avg,
                                 )
-                    bar.next()
-            bar.finish()
+                      )
+                #bar.next()
+            # bar.finish()
 
 
     def predict(self, board):

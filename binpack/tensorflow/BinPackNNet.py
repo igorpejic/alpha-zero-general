@@ -6,11 +6,17 @@ import tensorflow as tf
 
 ## Code based on OthelloNNet with minimal changes.
 
+TRAIN_ON_FIRST_STATE = True
 
 class BinPackNNet():
     def __init__(self, game, args):
         # game params
         self.board_x, self.board_y, self.channels = game.getBoardSize()
+
+        # train only on first shape
+        if TRAIN_ON_FIRST_STATE:
+            self.channels = 1
+
         self.action_size = game.getActionSize()
         self.args = args
 
@@ -24,7 +30,10 @@ class BinPackNNet():
         # Neural Net
         self.graph = tf.Graph()
         with self.graph.as_default():
-            self.input_boards = tf.placeholder(tf.float32, shape=[None, self.channels, self.board_x, self.board_y])    # s: batch_size x board_x x board_y
+            if TRAIN_ON_FIRST_STATE:
+                self.input_boards = tf.placeholder(tf.float32, shape=[None, self.board_x, self.board_y])    # s: batch_size x board_x x board_y
+            else:
+                self.input_boards = tf.placeholder(tf.float32, shape=[None, self.channels, self.board_x, self.board_y])    # s: batch_size x board_x x board_y
             self.dropout = tf.placeholder(tf.float32)
             self.isTraining = tf.placeholder(tf.bool, name="is_training")
 

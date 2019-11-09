@@ -13,16 +13,23 @@ class BinPackGame(Game):
     """
 
     def __init__(self, height=None, width=None, n_tiles=None):
+        self.initialize(height, width, n_tiles)
+
+    def initialize(self, height, width, n_tiles):
         Game.__init__(self)
+
+        self.height = height
+        self.width = width
+        self.n_tiles = n_tiles
 
         dg = DataGenerator()
         self.tiles = dg.gen_matrix_instance(n_tiles, width, height)
         print(self.tiles)
-        print(len(self.tiles))
 
         self._base_board = Board(height, width, self.tiles)
 
     def getInitBoard(self):
+        # self.initialize(self.height, self.width, self.n_tiles)
         return self._base_board.state, self._base_board.vis_state
 
     def getBoardSize(self):
@@ -67,6 +74,9 @@ class BinPackGame(Game):
         although I don't think rotating te pieces would hurt, it's just not  needed
         """
         # return [(board, pi), (board[:, ::-1], pi[::-1])]
+        board_right = np.copy(board)
+        board_right[0] = board_right[0][::-1]
+        # return [(board, pi), (board_right, pi[::-1])]
         return [(board, pi)]
 
     def stringRepresentation(self, board):
