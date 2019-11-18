@@ -3,6 +3,7 @@ import numpy as np
 # EPS = 1e-8
 EPS = 0.1
 
+from collections import OrderedDict
 
 from data_generator import DataGenerator
 from solution_checker import SolutionChecker
@@ -16,12 +17,13 @@ def render_to_dict(node, tree=None):
     if not node.children:
         return {}
     if tree is None:
-        tree = {}
+        tree = OrderedDict([])
 
     if str(node) in tree:
         tree = tree[str(node)]
     else:
-        tree = {}
+        tree[str(node)] = OrderedDict([])
+        tree = tree[str(node)]
     for child in node.children:
         tree[str(child)] = render_to_dict(child, tree)
 
@@ -42,7 +44,6 @@ class State(object):
     def copy(self):
         return State(np.copy(self.board), self.tiles[:], parent=self.parent)
 
-
     def child_with_biggest_score(self):
         return sorted(self.children, key=sort_key, reverse=True)[0]
 
@@ -53,15 +54,18 @@ class State(object):
     def __str__(self):
         return self.__repr__()
 
-    def __repr__(self):
+    def __repr__(self, short=False):
+        if short:
+            return f'{self.tiles}'
+
         output_list = [list(x) for x in self.tiles]
         if len(output_list) > 10:
-            output_list = []
+            output_list = str(output_list[:10]) +  '(...)'
 
         output_board = ''
         if len(self.tiles) < 2:
             output_board = self.board
-        return f'Remaining tiles:{len(self.tiles) / ORIENTATIONS}, tile placed: {self.tile_placed}, {output_list} avg. depth:({self.score}) {output_board}'
+        return f'Remaining tiles:{len(self.tiles) / ORIENTATIONS}, tile placed: {self.tile_placed}, {output_list} sim. depth:({self.score}) {output_board}'
 
 def get_cols(board):
     return board.shape[1]
@@ -114,27 +118,25 @@ class CustomMCTS():
 
     def predict(self, temp=1, N=3000):
         initial_state = self.state
-        current_state = self.state
-        available_tiles = current_state.tiles
-
         state = self.state
+        available_tiles = state.tiles
         prev_state = state
+
         depth = 0
         while len(state.tiles):
-            simulation_results = []
             tile_placed = False
             states = []
             for i, tile in enumerate(state.tiles):
                 val = 1
-                next_position = SolutionChecker.get_next_lfb_on_grid(state.board)
+                new_board = np.copy(state.board)
+                next_position = SolutionChecker.get_next_lfb_on_grid(new_board)
                 if not next_position:
                     states.append(None)
                     continue
 
-                new_board = np.copy(state.board)
                 success = SolutionChecker.place_element_on_grid_given_grid(
-                    tile, SolutionChecker.get_next_lfb_on_grid(state.board), val, new_board,
-                    get_cols(new_board), get_rows(new_board))
+                    tile, SolutionChecker.get_next_lfb_on_grid(new_board),
+                    val, new_board, get_cols(new_board), get_rows(new_board))
 
                 if not success:
                     # cannot place the tile.  this branch will not be considered
@@ -144,24 +146,24 @@ class CustomMCTS():
                     tile_placed = True
                     new_tiles = eliminate_pair_tiles(state.tiles, i)
                     new_state = State(
-                        board=new_board, tiles=new_tiles, parent=current_state)
-                    prev_state.children.append(new_state)
-                    simulation_result = self.perform_simulations(state, N=N)
-                    new_state.score = depth + simulation_result
+                        board=new_board, tiles=new_tiles, parent=state)
+                    state.children.append(new_state)
+                    simulation_result = self.perform_simulations(new_state, N=N)
+                    new_state.score = simulation_result
                     new_state.tile_placed = tile
-                    simulation_results.append(simulation_result)
                     states.append(new_state)
             if not tile_placed:
-                # no tile was placed, it's a dead end
+                # no tile was placed, it's a dead end; end game
                 return initial_state
 
             depth += 1
             best_action = get_max_index(states) 
-            new_board = np.copy(state.board)
             prev_state = state
             new_state = states[best_action]
+
             state = new_state
 
+        print('Solution found!')
         return initial_state
             
 
@@ -169,7 +171,8 @@ class CustomMCTS():
         depths = []
         for n in range(N):
             depths.append(self.perform_simulation(state.copy()))
-        return np.average(np.array(depths))
+        _max = np.max(np.array(depths))
+        return _max
 
     def perform_simulation(self, state):
         '''
@@ -179,6 +182,8 @@ class CustomMCTS():
         Returns average depth
         '''
         depth = 0
+        if len(state.tiles) ==0:
+            return 0
         while True:
             next_random_tile = np.random.randint(len(state.tiles))
             new_board = np.copy(state.board)

@@ -12,3 +12,5 @@ checkpoints/
 .idea/
 
 *.swp
+puzzles.csv
+results/
