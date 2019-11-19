@@ -4,7 +4,9 @@ from data_generator import DataGenerator
 
 from asciitree import LeftAligned
 from collections import OrderedDict as OD
+import numpy as np
 
+np.random.seed(123) # reproducibility
 def run_mcts():
     w = 39
     h = 39
@@ -13,7 +15,7 @@ def run_mcts():
     #w = 10
     #h = 10
 
-    N_simulations = 1000
+    N_simulations = 100
 
     dg = DataGenerator(w, h)
     tiles, board = dg.gen_tiles_and_board(n, w, h, order_tiles=True, from_file=True)

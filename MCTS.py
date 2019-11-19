@@ -10,6 +10,10 @@ from solution_checker import SolutionChecker
 
 ORIENTATIONS = 2
 
+ALL_TILES_USED = 'ALL_TILES_USED'
+TILE_CANNOT_BE_PLACED = 'TILE_CANNOT_BE_PLACED'
+NO_NEXT_POSITION_TILES_UNUSED = 'NO_NEXT_POSITION_TILES_UNUSED'
+
 def sort_key(x):
     return x.score
 
@@ -69,13 +73,13 @@ class State(object):
             return f'{self.tiles}'
 
         output_list = [list(x) for x in self.tiles]
-        if len(output_list) > 10:
-            output_list = str(output_list[:10]) +  '(...)'
+        if len(output_list) > 6:
+            output_list = str(output_list[:6]) +  '(...)'
 
         output_board = ''
         if len(self.tiles) < 2:
             output_board = self.board
-        return f'{self.uuid} Remaining tiles:{len(self.tiles) / ORIENTATIONS}, tile placed: {self.tile_placed}, {output_list} sim. depth:({self.score}) {output_board}'
+        return f'({self.uuid}) Remaining tiles: {len(self.tiles) / ORIENTATIONS}, Tile placed: {self.tile_placed}. Tiles: {output_list}. Sim. depth:({self.score}) {output_board}'
 
 def get_cols(board):
     return board.shape[1]
@@ -125,7 +129,6 @@ class CustomMCTS():
         self.state = State(self.initial_board, self.initial_tiles)
         self.solution_checker = SolutionChecker(len(tiles), get_rows(board), get_cols(board))
 
-
     def predict(self, temp=1, N=3000):
         initial_state = self.state
         state = self.state
@@ -138,17 +141,11 @@ class CustomMCTS():
             states = []
             for i, tile in enumerate(state.tiles):
                 val = 1
-                new_board = np.copy(state.board)
-                next_position = SolutionChecker.get_next_lfb_on_grid(new_board)
-                if not next_position:
-                    states.append(None)
-                    continue
-
-                success = SolutionChecker.place_element_on_grid_given_grid(
-                    tile, SolutionChecker.get_next_lfb_on_grid(new_board),
-                    val, new_board, get_cols(new_board), get_rows(new_board))
-
-                if not success:
+                success, new_board = self.get_next_turn(state, tile, val)
+                if success == ALL_TILES_USED:
+                    print('solution found!')
+                    return initial_state
+                if success == TILE_CANNOT_BE_PLACED:
                     # cannot place the tile.  this branch will not be considered
                     states.append(None)
                     continue
@@ -175,46 +172,66 @@ class CustomMCTS():
 
         print('Solution found!')
         return initial_state
-            
+
+    def get_next_turn(self, state, tile, val=1):
+        new_board = np.copy(state.board)
+        next_position = SolutionChecker.get_next_lfb_on_grid(new_board)
+        # one without the other should not be possible
+        if not next_position and len(state.tiles) == 0:
+            print('solution found!')
+            return ALL_TILES_USED, None
+        elif not next_position:
+            return NO_NEXT_POSITION_TILES_UNUSED, None
+
+        success, new_board = SolutionChecker.place_element_on_grid_given_grid(
+            tile, SolutionChecker.get_next_lfb_on_grid(new_board),
+            val, new_board, get_cols(new_board), get_rows(new_board))
+
+        if not success:
+            # cannot place the tile. this branch will not be considered
+            return TILE_CANNOT_BE_PLACED, None
+        return True, new_board
 
     def perform_simulations(self, state, N=3000):
-        depths = []
-        for n in range(N):
-            depths.append(self.perform_simulation(state.copy()))
-        # _max = np.max(np.array(depths))
-        _max = np.average(np.array(depths))
-        return _max
-
-    def perform_simulation(self, state):
         '''
         Given a state perform N simulations.
         One simulation consists of either filling container or having no more tiles to place.
 
         Returns average depth
         '''
+        depths = []
+        for n in range(N):
+            depths.append(self.perform_simulation(state.copy()))
+        _max = np.max(np.array(depths))
+        #_max = np.average(np.array(depths))
+        return _max
+
+
+    def perform_simulation(self, state):
         depth = 0
-        if len(state.tiles) ==0:
+        if len(state.tiles) == 0:
             return 0
         while True:
+            val = 1
             next_random_tile = np.random.randint(len(state.tiles))
-            new_board = np.copy(state.board)
-            next_position = SolutionChecker.get_next_lfb_on_grid(new_board)
-            if not next_position:
-                # cannot place next tile; return depth
+            success, new_board = self.get_next_turn(
+                state, state.tiles[next_random_tile], val)
+
+            if success == ALL_TILES_USED:
+                # no LFB on grid; probably means grid is full
+                return depth + 1
+            if success == NO_NEXT_POSITION_TILES_UNUSED:
                 return depth
-            success = SolutionChecker.place_element_on_grid_given_grid(
-                state.tiles[next_random_tile], next_position, depth, new_board,
-                get_cols(state.board), get_rows(state.board))
-            if not success:
+
+            if success == TILE_CANNOT_BE_PLACED:
                 # cannot place the tile. return depth reached
                 return depth
             else:
                 new_tiles = eliminate_pair_tiles(state.tiles, next_random_tile)
                 state = State(board=new_board, tiles=new_tiles, parent=state)
-                if len(new_tiles) == 0:
-                    # no more tiles. return depth + 1
-                    return depth + 1
             depth += 1
+            if not new_tiles:
+                return depth
 
         return depth
 
