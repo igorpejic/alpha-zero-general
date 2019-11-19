@@ -29,6 +29,15 @@ def render_to_dict(node, tree=None):
 
     return tree
 
+class UUID(object):
+    def __init__(self):
+        self.i = 0
+
+    def uuid(self):
+        self.i += 1
+        return self.i
+
+_uuid = UUID()
 
 class State(object):
 
@@ -36,6 +45,7 @@ class State(object):
         self.board = np.copy(board)
         self.tiles = tiles[:]
         self.parent = parent
+        self.uuid = _uuid.uuid()
         self.children = []
         self.score = None
         self.tile_placed = None
@@ -65,7 +75,7 @@ class State(object):
         output_board = ''
         if len(self.tiles) < 2:
             output_board = self.board
-        return f'Remaining tiles:{len(self.tiles) / ORIENTATIONS}, tile placed: {self.tile_placed}, {output_list} sim. depth:({self.score}) {output_board}'
+        return f'{self.uuid} Remaining tiles:{len(self.tiles) / ORIENTATIONS}, tile placed: {self.tile_placed}, {output_list} sim. depth:({self.score}) {output_board}'
 
 def get_cols(board):
     return board.shape[1]
@@ -171,7 +181,8 @@ class CustomMCTS():
         depths = []
         for n in range(N):
             depths.append(self.perform_simulation(state.copy()))
-        _max = np.max(np.array(depths))
+        # _max = np.max(np.array(depths))
+        _max = np.average(np.array(depths))
         return _max
 
     def perform_simulation(self, state):

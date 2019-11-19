@@ -51,4 +51,4 @@ class TestCustomMCTS(unittest.TestCase):
 
         ret_child_1_1 = ret[str(state)][str(child_state_1)][str(child_state_1_1)]
         self.assertEqual(str(child_state_1_1_1) in ret_child_1_1.keys(), True)
-        self.assertEqual(ret_child_1_1[str(child_state_1_1_1)], child_state_1_1_1)
+        self.assertEqual(ret_child_1_1[str(child_state_1_1_1)], {})
