@@ -1,4 +1,5 @@
 import math
+import json
 import numpy as np
 # EPS = 1e-8
 EPS = 0.1
@@ -14,24 +15,38 @@ ALL_TILES_USED = 'ALL_TILES_USED'
 TILE_CANNOT_BE_PLACED = 'TILE_CANNOT_BE_PLACED'
 NO_NEXT_POSITION_TILES_UNUSED = 'NO_NEXT_POSITION_TILES_UNUSED'
 
+
 def sort_key(x):
     return x.score
 
-def render_to_dict(node, tree=None):
+def render_to_dict(node, tree=None, all_nodes={}, only_ids=False):
+
+    all_nodes[node.uuid_str()] = node
     if not node.children:
-        return {}
+        return {}, all_nodes
+
+    if only_ids:
+        node_str = node.uuid_str()
+    else:
+        node_str = str(node)
+
     if tree is None:
         tree = OrderedDict([])
 
-    if str(node) in tree:
-        tree = tree[str(node)]
+    if node_str in tree:
+        tree = tree[node_str]
+        # all_nodes[node.uuid_str()] = node
     else:
-        tree[str(node)] = OrderedDict([])
-        tree = tree[str(node)]
+        tree[node_str] = OrderedDict([])
+        tree = tree[node_str]
     for child in node.children:
-        tree[str(child)] = render_to_dict(child, tree)
+        if only_ids:
+            child_str = child.uuid_str()
+        else:
+            child_str = str(child)
+        tree[child_str], all_nodes = render_to_dict(child, tree, all_nodes, only_ids=only_ids)
 
-    return tree
+    return tree, all_nodes
 
 class UUID(object):
     def __init__(self):
@@ -54,6 +69,9 @@ class State(object):
         self.score = None
         self.tile_placed = None
 
+    def uuid_str(self):
+      return f'{self.uuid}'
+
 
     def copy(self):
         return State(np.copy(self.board), self.tiles[:], parent=self.parent)
@@ -61,8 +79,29 @@ class State(object):
     def child_with_biggest_score(self):
         return sorted(self.children, key=sort_key, reverse=True)[0]
 
-    def render_children(self):
-        return {str(self): render_to_dict(self)}
+    def render_children(self, only_ids=False):
+        ret, all_nodes = render_to_dict(self, only_ids=only_ids)
+        if only_ids:
+            self_str = self.uuid_str()
+        else:
+            self_str = str(self)
+        all_nodes[self.uuid_str()] = self
+        return {self_str: ret}, all_nodes 
+
+    def to_json(self):
+        score = self.score or 0
+        board = list(self.board)
+        tiles = self.tiles
+        tile_placed = self.tile_placed
+        board = self.board.tolist()
+        ret = {
+            'tiles': tiles,
+            'board': board,
+            'tile_placed': tile_placed,
+            'score': int(score),
+        }
+        return ret
+
 
 
     def __str__(self):
@@ -77,7 +116,7 @@ class State(object):
             output_list = str(output_list[:6]) +  '(...)'
 
         output_board = ''
-        if len(self.tiles) < 2:
+        if len(self.tiles) <= 4:
             output_board = self.board
         return f'({self.uuid}) Remaining tiles: {len(self.tiles) / ORIENTATIONS}, Tile placed: {self.tile_placed}. Tiles: {output_list}. Sim. depth:({self.score}) {output_board}'
 
