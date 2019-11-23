@@ -48,6 +48,24 @@ def render_to_dict(node, tree=None, all_nodes={}, only_ids=False):
 
     return tree, all_nodes
 
+def render_to_json(node, tree=None, i=0, all_nodes={}, only_ids=False):
+
+    node_dict = node.to_json()
+    if not node.children:
+        return node_dict
+
+    if tree is None:
+        tree = {}
+
+    i+=1
+
+    new_tree = {**node_dict}
+
+    for child in node.children:
+        new_tree['children'].append(render_to_json(child, i=i))
+
+    return new_tree
+
 class UUID(object):
     def __init__(self):
         self.i = 0
@@ -79,6 +97,9 @@ class State(object):
     def child_with_biggest_score(self):
         return sorted(self.children, key=sort_key, reverse=True)[0]
 
+    def render_to_json(self):
+        return render_to_json(self)
+
     def render_children(self, only_ids=False):
         ret, all_nodes = render_to_dict(self, only_ids=only_ids)
         if only_ids:
@@ -99,6 +120,8 @@ class State(object):
             'board': board,
             'tile_placed': tile_placed,
             'score': int(score),
+            'name': self.uuid_str(),
+            'children': [],
         }
         return ret
 
@@ -175,11 +198,11 @@ class CustomMCTS():
         prev_state = state
 
         depth = 0
+        val = 1
         while len(state.tiles):
             tile_placed = False
             states = []
             for i, tile in enumerate(state.tiles):
-                val = 1
                 success, new_board = self.get_next_turn(state, tile, val)
                 if success == ALL_TILES_USED:
                     print('solution found!')
@@ -202,6 +225,7 @@ class CustomMCTS():
                 # no tile was placed, it's a dead end; end game
                 return initial_state
 
+            val += 1
             depth += 1
             best_action = get_max_index(states) 
             prev_state = state

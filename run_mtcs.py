@@ -23,8 +23,8 @@ class NpEncoder(json.JSONEncoder):
 RESULTS_DIR = 'results/'
 np.random.seed(123) # reproducibility
 def run_mcts():
-    w = 39
-    h = 39
+    w = 15
+    h = 15
     n = 11
     #n = 16
     #w = 10
@@ -36,7 +36,7 @@ def run_mcts():
     config, unparsed = parser.parse_known_args()
 
     N_simulations = config.n_sim
-    from_file = True
+    from_file = False
 
     dg = DataGenerator(w, h)
     tiles, board = dg.gen_tiles_and_board(n, w, h, order_tiles=True, from_file=from_file)
@@ -50,8 +50,9 @@ def run_mcts():
     child = ret.children[0]
 
     tree, all_nodes = ret.render_children(only_ids=True)
+
+
     k_v = {key: all_nodes[key].to_json() for key in all_nodes.keys()}
-    print(k_v)
 
     from_file_str = ''
     if from_file:
@@ -60,17 +61,11 @@ def run_mcts():
     output_filename_base = f'{n}_{w}_{h}_{from_file_str}_{N_simulations}'
     k_v_json = json.dumps(k_v, cls=NpEncoder)
 
-    tree_json = json.dumps(tree)
-
-    with open(os.path.join(RESULTS_DIR, output_filename_base) + '_kv.json', 'w') as f:
-        f.write(k_v_json)
-
+    tree_json = json.dumps(ret.render_to_json(), cls=NpEncoder)
     with open(os.path.join(RESULTS_DIR, output_filename_base) + '_tree.json', 'w') as f:
         f.write(tree_json)
 
-
     print(tree_json)
-    print(k_v_json)
 
     tree, all_nodes = ret.render_children(only_ids=False)
     tr = LeftAligned()
