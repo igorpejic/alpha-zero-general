@@ -23,9 +23,9 @@ class NpEncoder(json.JSONEncoder):
 RESULTS_DIR = 'results/'
 np.random.seed(123) # reproducibility
 def run_mcts():
-    w = 15
-    h = 15
-    n = 11
+    w = 31
+    h = 31
+    n = 21
     #n = 16
     #w = 10
     #h = 10
