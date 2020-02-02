@@ -36,7 +36,7 @@ class Board():
         else:
             self.state = state
             self.vis_state = visualization_state
-            assert self.state.shape == (len(tiles) + 1, self.height, self.width)
+        assert self.state.shape == (len(tiles) + 1, self.height, self.width)
 
     def add_tile(self, position, player):
         """
