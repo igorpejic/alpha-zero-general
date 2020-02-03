@@ -43,9 +43,10 @@ def solution_to_solution_matrix(solution, rows, cols):
     This is the expected output of the residual network
     '''
     grid = np.ones((rows, cols))
-    grid *= -1
+    grid *= 0
     position = solution[2]
-    grid[position[0]: position[0] + solution[0], position[1]: position[1] + solution[1]] = 1
+    number_of_ones = solution[0] * solution[1]
+    grid[position[0]: position[0] + solution[0], position[1]: position[1] + solution[1]] = 1 / number_of_ones
     return grid
 
 def pad_tiles_with_zero_matrices(tiles, n_zero_matrices_to_add, rows, cols):
@@ -77,7 +78,7 @@ if __name__=="__main__":
     grid = np.zeros([height, width])
     examples = []
     print('Preparing examples')
-    N_EXAMPLES = 20
+    N_EXAMPLES = 50
     i = 0
     while i < N_EXAMPLES:
         print(f'{i}/{N_EXAMPLES}')
@@ -103,10 +104,11 @@ if __name__=="__main__":
 
     nnet.train(_examples)
     np.set_printoptions(formatter={'float': lambda x: "{0:0.2f}".format(x)})
-    for example in _examples[:1]:
+    for example in _examples[10:20]:
         prediction = nnet.predict(example[0])
         _prediction = np.reshape(prediction[0], (width, height))
         expected = np.reshape(example[1], (width, height))
+        print('-' * 50)
         print('prediction')
         print(_prediction)
         print('expected')
