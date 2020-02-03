@@ -33,15 +33,17 @@ class BinPackGame(Game):
         return self._base_board.state, self._base_board.vis_state
 
     def getBoardSize(self):
+        ORIENTATIONS = 2
         return (
             self._base_board.height, self._base_board.width,
-            len(self._base_board.state)
+            self.n_tiles * ORIENTATIONS + 1
                 )
 
     def getActionSize(self):
         # allowing moves without gravity physical support
-        return (self._base_board.width * self._base_board.height *
-                self._base_board.orientations)
+        return (self._base_board.width * self._base_board.height)
+        # orientations are included in tiles
+        # self._base_board.orientations)
 
     def getNextState(self, board, player, action, vis_state=None):
         """Returns a copy of the board with updated move, original board is unmodified."""

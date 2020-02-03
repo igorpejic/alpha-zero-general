@@ -17,7 +17,7 @@ args = dotdict({
     'lr': 0.001,
     'dropout': 0.3,
     'epochs': 900,
-    'batch_size': 8,
+    'batch_size': 16,
     'num_channels': 512,
 })
 
@@ -42,7 +42,7 @@ class NNetWrapper(NeuralNet):
         """
 
         for epoch in range(args.epochs):
-            if epoch % 50 == 0:
+            if epoch % 25 == 0:
                 print('EPOCH ::: ' + str(epoch + 1) + ' len examples:' + str(len(examples)))
             data_time = AverageMeter()
             batch_time = AverageMeter()
@@ -76,7 +76,7 @@ class NNetWrapper(NeuralNet):
                 batch_idx += 1
 
                 # plot progress
-                if epoch % 50 == 0:
+                if epoch % 25 == 0:
                     print('({batch}/{size}) Data: {data:.3f}s | Batch: {bt:.3f}s | Total: {total:} | ETA: {eta:} | Loss_pi: {lpi:.4f} | Loss_v: {lv:.3f}'.format(
                                 batch=batch_idx,
                                 size=int(len(examples) / args.batch_size),
@@ -105,10 +105,12 @@ class NNetWrapper(NeuralNet):
         board = board[np.newaxis, :, :]
 
         # run
-        prob, v = self.sess.run([self.nnet.prob, self.nnet.v], feed_dict={self.nnet.input_boards: board, self.nnet.dropout: 0, self.nnet.isTraining: False})
+        prob, v = self.sess.run(
+            [self.nnet.prob, self.nnet.v],
+            feed_dict={self.nnet.input_boards: board, self.nnet.dropout: 0, self.nnet.isTraining: False})
 
         #print('PREDICTION TIME TAKEN : {0:03f}'.format(time.time()-start))
-        return prob[0], v[0]
+        return prob[0], v[0], self.nnet.pi[0]
 
     def save_checkpoint(self, folder='checkpoint', filename='checkpoint.pth.tar'):
         filepath = os.path.join(folder, filename)
