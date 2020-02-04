@@ -16,13 +16,12 @@ from .BinPackNNet import BinPackNNet as onnet
 args = dotdict({
     'lr': 0.001,
     'dropout': 0.3,
-    'epochs': 900,
-    'batch_size': 16,
+    'epochs': 40,
+    'batch_size': 32,
     'num_channels': 512,
 })
 
 
-## Code based on othello.NNetWrapper with minimal changes.
 
 class NNetWrapper(NeuralNet):
     def __init__(self, game):
@@ -42,15 +41,14 @@ class NNetWrapper(NeuralNet):
         """
 
         for epoch in range(args.epochs):
-            if epoch % 25 == 0:
-                print('EPOCH ::: ' + str(epoch + 1) + ' len examples:' + str(len(examples)))
+            print('EPOCH ::: ' + str(epoch + 1) + ' len examples:' + str(len(examples)))
             data_time = AverageMeter()
             batch_time = AverageMeter()
             pi_losses = AverageMeter()
             v_losses = AverageMeter()
             end = time.time()
 
-            # bar = Bar('Training Net', max=int(len(examples) / args.batch_size / 50))
+            bar = Bar('Training Net', max=int(len(examples) / args.batch_size))
             batch_idx = 0
 
             # self.sess.run(tf.local_variables_initializer())
@@ -76,22 +74,21 @@ class NNetWrapper(NeuralNet):
                 batch_idx += 1
 
                 # plot progress
-                if epoch % 25 == 0:
+                verbose = True
+                if verbose:
                     print('({batch}/{size}) Data: {data:.3f}s | Batch: {bt:.3f}s | Total: {total:} | ETA: {eta:} | Loss_pi: {lpi:.4f} | Loss_v: {lv:.3f}'.format(
-                                batch=batch_idx,
-                                size=int(len(examples) / args.batch_size),
-                                data=data_time.avg,
-                                bt=batch_time.avg,
-                                #total=bar.elapsed_td,
-                                total=0,
-                                #eta=bar.eta_td,
-                                eta=0,
-                                lpi=pi_losses.avg,
-                                lv=v_losses.avg,
-                                )
+                                    batch=batch_idx,
+                                    size=int(len(examples) / args.batch_size),
+                                    data=data_time.avg,
+                                    bt=batch_time.avg,
+                                    total=bar.elapsed_td,
+                                    eta=bar.eta_td,
+                                    lpi=pi_losses.avg,
+                                    lv=v_losses.avg,
+                                    )
                       )
-                #bar.next()
-            # bar.finish()
+                bar.next()
+            bar.finish()
 
 
     def predict(self, board):
