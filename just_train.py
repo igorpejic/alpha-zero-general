@@ -1,11 +1,7 @@
 from Coach import Coach
 import math
 import numpy as np
-# from othello.pytorch.NNet import NNetWrapper as nn
 
-# from othello.OthelloGame import OthelloGame as Game
-# from othello.tensorflow.NNet import NNetWrapper as nn
-from binpack.tensorflow.NNet import NNetWrapper as nn
 from binpack.BinPackGame import BinPackGame as Game
 from utils import *
 from data_generator import DataGenerator
@@ -174,6 +170,9 @@ if __name__ == "__main__":
     g = Game(HEIGHT, WIDTH, N_TILES)
 
     dg = DataGenerator(WIDTH, HEIGHT)
+
+    # from binpack.tensorflow.NNet import NNetWrapper as nn
+    from binpack.keras.NNet import NNetWrapper as nn
     nnet = nn(g)
 
     if args.load_model and False:
@@ -186,7 +185,7 @@ if __name__ == "__main__":
     grid = np.zeros([height, width])
     examples = []
     print('Preparing examples')
-    N_EXAMPLES = 200
+    N_EXAMPLES = 800
 
     _examples = get_examples(N_EXAMPLES, N_TILES, height, width, dg)
 

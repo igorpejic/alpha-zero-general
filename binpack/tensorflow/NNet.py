@@ -16,7 +16,7 @@ from .BinPackNNet import BinPackNNet as onnet
 args = dotdict({
     'lr': 0.001,
     'dropout': 0.3,
-    'epochs': 40,
+    'epochs': 10,
     'batch_size': 32,
     'num_channels': 512,
 })
@@ -48,7 +48,7 @@ class NNetWrapper(NeuralNet):
             v_losses = AverageMeter()
             end = time.time()
 
-            bar = Bar('Training Net', max=int(len(examples) / args.batch_size))
+            bar = Bar(f'({epoch}/{args.epochs})) / Training Net', max=int(len(examples) / args.batch_size))
             batch_idx = 0
 
             # self.sess.run(tf.local_variables_initializer())
