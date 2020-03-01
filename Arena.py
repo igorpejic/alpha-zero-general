@@ -62,7 +62,7 @@ class Arena():
 
         return game_ended
 
-    def playGames(self, num, verbose=True):
+    def playGames(self, num, verbose=False):
         """
         Plays num games in which player1 starts num/2 games and player2 starts
         num/2 games.
