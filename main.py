@@ -11,7 +11,7 @@ from utils import *
 
 args = dotdict({
     'numIters': 8,
-    'numEps': 3,
+    'numEps': 9,
     'tempThreshold': 15,
     'updateThreshold': 0.6,
     'maxlenOfQueue': 200000,
@@ -27,7 +27,7 @@ args = dotdict({
 })
 
 if __name__=="__main__":
-    N_TILES = 8 
+    N_TILES = 15 
     HEIGHT = 8
     WIDTH = 8
     g = Game(HEIGHT, WIDTH, N_TILES)

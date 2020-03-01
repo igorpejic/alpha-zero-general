@@ -60,6 +60,9 @@ class BinPackGame(Game):
         return self._base_board.with_state(tiles=tiles, board=board).get_valid_moves()
 
     def getGameEnded(self, state, player):
+        non_placed_tiles = SolutionChecker.get_n_nonplaced_tiles(state.tiles)
+        if non_placed_tiles == 0: # all tiles placed
+            return 1
         possible_tile_actions = SolutionChecker.get_possible_tile_actions_given_grid(state.board, state.tiles)
         n_possible_actions = SolutionChecker.get_n_nonplaced_tiles(possible_tile_actions)
         if n_possible_actions != 0:
