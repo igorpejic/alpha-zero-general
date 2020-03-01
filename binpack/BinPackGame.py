@@ -69,8 +69,19 @@ class BinPackGame(Game):
             # 0 used to represent unfinished game.
             return 0
         else:
-            n_unplaced_tiles = SolutionChecker.get_n_nonplaced_tiles(state.tiles)
-            return (len(state.tiles) - n_unplaced_tiles) / len(state.tiles)
+            return self.getAreaReward(state.board)
+
+    def getAreaReward(self, board):
+        '''
+        returns reward; higher area covered, bigger reward
+        '''
+        unique, counts = np.unique(board, return_counts=True)
+        counts = dict(zip(unique, counts))
+        return counts[1] / (board.shape[0] * board.shape[1])
+
+    def getTilesReward(self, tiles):
+        n_unplaced_tiles = SolutionChecker.get_n_nonplaced_tiles(tiles)
+        return (len(tiles) - n_unplaced_tiles) / len(tiles)
 
     def getCanonicalForm(self, state, player):
         # Flip player from 1 to -1

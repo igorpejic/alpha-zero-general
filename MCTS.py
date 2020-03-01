@@ -407,7 +407,13 @@ class MCTS():
                     #if not state.state[0].any():
                     #    print(self.Qsa[(_s, a)], u, 'first', cur_best, u > cur_best, self.Nsa[(_s, a)])
                 else:
-                    u = self.args.cpuct*self.Ps[_s][a]*math.sqrt(self.Ns[_s] + EPS)
+                    # https://github.com/suragnair/alpha-zero-general/issues/72
+                    qsa_vals = self.Qsa.values()
+                    mean_qsa = 0
+                    if len(qsa_vals):
+                        mean_qsa = sum(qsa_vals) / len(qsa_vals)
+
+                    u = mean_qsa + self.args.cpuct*self.Ps[_s][a]*math.sqrt(self.Ns[_s] + EPS)
 
                 if u > cur_best:
                     cur_best = u

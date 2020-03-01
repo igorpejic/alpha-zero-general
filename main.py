@@ -10,14 +10,14 @@ from binpack.BinPackGame import BinPackGame as Game
 from utils import *
 
 args = dotdict({
-    'numIters': 8,
+    'numIters': 20,
     'numEps': 9,
     'tempThreshold': 15,
     'updateThreshold': 0.6,
     'maxlenOfQueue': 200000,
-    'numMCTSSims': 50,
-    'arenaCompare': 2,
-    'cpuct': 1,
+    'numMCTSSims': 40,
+    'arenaCompare': 4,
+    'cpuct': 1.5,
 
     'checkpoint': './temp/',
     'load_model': False,
@@ -27,7 +27,7 @@ args = dotdict({
 })
 
 if __name__=="__main__":
-    N_TILES = 15 
+    N_TILES = 10
     HEIGHT = 8
     WIDTH = 8
     g = Game(HEIGHT, WIDTH, N_TILES)
