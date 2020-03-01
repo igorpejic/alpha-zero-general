@@ -171,8 +171,8 @@ if __name__ == "__main__":
 
     dg = DataGenerator(WIDTH, HEIGHT)
 
-    # from binpack.tensorflow.NNet import NNetWrapper as nn
-    from binpack.keras.NNet import NNetWrapper as nn
+    from binpack.tensorflow.NNet import NNetWrapper as nn
+    # from binpack.keras.NNet import NNetWrapper as nn
     nnet = nn(g)
 
     if args.load_model and False:

@@ -3,7 +3,9 @@ from Coach import Coach
 
 # from othello.OthelloGame import OthelloGame as Game
 # from othello.tensorflow.NNet import NNetWrapper as nn
-from binpack.tensorflow.NNet import NNetWrapper as nn
+# from binpack.tensorflow.NNet import NNetWrapper as nn
+# from binpack.tensorflow.NNet import NNetWrapper as nn
+from alpha.binpack.keras.NNet import NNetWrapper as nn
 from binpack.BinPackGame import BinPackGame as Game
 from utils import *
 
@@ -30,7 +32,7 @@ if __name__=="__main__":
     WIDTH = 8
     g = Game(HEIGHT, WIDTH, N_TILES)
 
-    nnet = nn(g)
+    nnet = nn(g, predict_move_index=True, scalar_tiles=True, predict_v=True)
 
     if args.load_model and False:
         nnet.load_checkpoint(args.load_folder_file[0], args.load_folder_file[1])

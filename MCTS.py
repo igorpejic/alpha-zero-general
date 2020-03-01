@@ -316,7 +316,7 @@ class MCTS():
         self.Es = {}        # stores game.getGameEnded ended for board s
         self.Vs = {}        # stores game.getValidMoves for board s
 
-    def getActionProb(self, canonicalBoard, temp=1):
+    def getActionProb(self, state, temp=1):
         """
         This function performs numMCTSSims simulations of MCTS starting from
         canonicalBoard.
@@ -326,12 +326,12 @@ class MCTS():
                    proportional to Nsa[(s,a)]**(1./temp)
         """
         for i in range(self.args.numMCTSSims):
-            self.search(canonicalBoard)
+            self.search(state)
 
-        s, state = self.game.stringRepresentation(canonicalBoard)
+        s = self.game.stringRepresentation(state)
         counts = [self.Nsa[(s,a)] if (s,a) in self.Nsa else 0 for a in range(self.game.getActionSize())]
 
-        if temp==0:
+        if temp == 0:
             bestA = np.argmax(counts)
             probs = [0]*len(counts)
             probs[bestA]=1
@@ -342,7 +342,7 @@ class MCTS():
         return probs
 
 
-    def search(self, canonicalBoard):
+    def search(self, state):
         """
         This function performs one iteration of MCTS. It is recursively called
         till a leaf node is found. The action chosen at each node is one that
@@ -362,20 +362,21 @@ class MCTS():
         Returns:
             v: the negative of the value of the current canonicalBoard
         """
-        _s, state = self.game.stringRepresentation(canonicalBoard)
+        _s = self.game.stringRepresentation(state)
+        PLAYER = 1
 
         if _s not in self.Es:
-            self.Es[_s] = self.game.getGameEnded(canonicalBoard, 1)
-        if self.Es[_s]!=0:
+            self.Es[_s] = self.game.getGameEnded(state, PLAYER)
+        if self.Es[_s] != 0:
             # terminal node
             return self.Es[_s]
 
         if _s not in self.Ps:
             # leaf node
-            self.Ps[_s], v = self.nnet.predict(canonicalBoard[0])
-            valids = self.game.getValidMoves(canonicalBoard, 1)
-            if valids.all():
-                print(self.Ps[_s])
+            # possible_tile_moves = SolutionChecker.get_possible_tile_actions_given_grid(state.board, state.tiles, pad_with_zeros=True)
+            self.Ps[_s], v = self.nnet.predict([state.board, SolutionChecker.tiles_to_np_array(state.tiles)])
+            valids = self.game.getValidMoves(state.board, state.tiles, PLAYER)
+
             self.Ps[_s] = self.Ps[_s]*valids      # masking invalid moves
             sum_Ps_s = np.sum(self.Ps[_s])
             if sum_Ps_s > 0:
@@ -399,25 +400,25 @@ class MCTS():
         best_act = -1
 
         # pick the action with the highest upper confidence bound
-        for a in range(self.game.getActionSize()):
+        for a in range(len(state.tiles)):
             if valids[a]:
                 if (_s,a) in self.Qsa:
                     u = self.Qsa[(_s,a)] + self.args.cpuct*self.Ps[_s][a]*math.sqrt(self.Ns[_s])/(1+self.Nsa[(_s,a)])
                     #if not state.state[0].any():
                     #    print(self.Qsa[(_s, a)], u, 'first', cur_best, u > cur_best, self.Nsa[(_s, a)])
                 else:
-                    # i Added + 100 - optimistic initialization??
-                    u = self.args.cpuct*self.Ps[_s][a]*math.sqrt(self.Ns[_s] + EPS) + 100     # Q = 0 ?
-                    #if not state.state[0].any():
-                    #    print(u, 'second')
+                    u = self.args.cpuct*self.Ps[_s][a]*math.sqrt(self.Ns[_s] + EPS)
 
                 if u > cur_best:
                     cur_best = u
                     best_act = a
 
+        # print(state.tiles, 'dddd')
         a = best_act
-        next_s, next_player, next_vis_state = self.game.getNextState(canonicalBoard, 1, a)
+        next_s, next_player = self.game.getNextState(state, a, PLAYER)
+        # print(next_s.tiles, 'ffff')
         next_s = self.game.getCanonicalForm(next_s, next_player)
+        #  print(next_s.tiles, 'ccccc')
 
         v = self.search(next_s)
 

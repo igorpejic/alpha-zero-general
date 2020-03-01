@@ -35,34 +35,35 @@ class Arena():
         """
         players = [self.player1]
         curPlayer = 1
-        board, vis_state = self.game.getInitBoard()
+        state = self.game.getInitBoard()
         it = 0
-        game_ended = self.game.getGameEnded(board, curPlayer)
+        game_ended = self.game.getGameEnded(state, curPlayer)
         while game_ended==0:
             it+=1
             if verbose:
                 assert(self.display)
                 print("Turn ", str(it), "Player ", str(curPlayer))
-                self.display(board)
-            action = players[0](self.game.getCanonicalForm(board, curPlayer))
+                self.display(state)
+            action = players[0](self.game.getCanonicalForm(state, curPlayer))
 
-            valids = self.game.getValidMoves(self.game.getCanonicalForm(board, curPlayer),1)
+            state = self.game.getCanonicalForm(state, curPlayer)
+            valids = self.game.getValidMoves(state.board, state.tiles, 1)
 
-            if valids[action]==0:
+            if valids[action] == 0:
                 print(action)
-                assert valids[action] >0
-            board, curPlayer, vis_state = self.game.getNextState(board, curPlayer, action, vis_state)
-            game_ended = self.game.getGameEnded(board, curPlayer)
+                assert valids[action] > 0
+            state, curPlayer = self.game.getNextState(
+                state, action, curPlayer)
+            game_ended = self.game.getGameEnded(state, curPlayer)
 
         print(f'Game ended score {game_ended}')
         print('Board')
-        print(vis_state)
 
         if verbose:
             assert(self.display)
-            print("Game over: Turn ", str(it), "Result ", str(self.game.getGameEnded(board, 1)))
-            self.display(board)
-        return self.game.getGameEnded(board, 1)
+            print("Game over: Turn ", str(it), "Result ", str(self.game.getGameEnded(state, 1)))
+            self.display(state)
+        return self.game.getGameEnded(state, 1)
 
     def playGames(self, num, verbose=False):
         """
